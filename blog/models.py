@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from taggit.managers import TaggableManager
 
 
 # Managers
@@ -24,7 +25,7 @@ class Comment(models.Model):
 		ordering = ('-created', )
 
 	def __str__(self):
-		return f'{self.name} sent a comment on {self.po}'
+		return f'{self.name} sent a comment on {self.post}'
 
 
 class Post(models.Model):
@@ -40,6 +41,7 @@ class Post(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	updated = models.DateTimeField(auto_now=True)
 	status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+	tags = TaggableManager()
 
 	objects = models.Manager()  # The default manager.
 	published = PublishedManager()  # Our custom manager.
