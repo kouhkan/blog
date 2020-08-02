@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from taggit.models import Tag
 from django.db.models import Count
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank, TrigramSimilarity
 
 
 def post_share(request, post_id):
@@ -106,13 +106,10 @@ def post_search(request):
 	if 'query' in request.GET:
 		form = SearchForm(request.GET)
 		if form.is_valid():
-			search_vector = SearchVector('title', weight='B') + SearchVector('body', weight='A')
-			search_query = SearchQuery(query)
+			query = form.cleaned_data['query']
 			results = Post.published.annotate(
-					search=search_vector,
-					rank=SearchRank(search_vector, search_query)
-			).filter(rank__gte=0.3).order_by('-rank')
-
+					similarity=TrigramSimilarity('title', query),
+			).filter(similarity__gt=0.1).order_by('-similarity')
 	context = {
 		'form': form,
 		'query': query,
